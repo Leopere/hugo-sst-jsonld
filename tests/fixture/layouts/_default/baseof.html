@@ -1,0 +1,21 @@
+{{/* Copyright © 2026 ColinKnapp.com. All rights reserved. */}}
+<!doctype html>
+<html lang="{{ .Language.LanguageCode }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ .Title }}</title>
+  {{- if not .Params.noindex }}
+    {{- partial "sst-jsonld/from-file.html" (dict
+      "page" .
+      "source" "sst.yml"
+      "key" (.Param "sstKey")
+      "locale" (.Param "locale")
+      "language" (.Param "jsonLdLanguage")
+      "canonical" (.Param "jsonLdCanonical")
+      "schemaType" (.Param "jsonLdSchemaType")
+      "strict" .Site.Params.strict
+    ) -}}
+  {{- end }}
+</head>
+<body>{{ block "main" . }}{{ .Content }}{{ end }}</body>
+</html>

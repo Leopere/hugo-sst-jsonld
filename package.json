@@ -1,0 +1,15 @@
+{
+  "name": "hugo-sst-jsonld",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hugo module that generates JSON-LD keyword arrays from SST keyword data.",
+  "scripts": {
+    "test": "node --test tests/integration.test.js"
+  },
+  "license": "UNLICENSED",
+  "author": "ColinKnapp.com",
+  "copyright": "Copyright © 2026 ColinKnapp.com. All rights reserved.",
+  "engines": {
+    "node": ">=20"
+  }
+}

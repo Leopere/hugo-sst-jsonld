@@ -1,0 +1,77 @@
+{{/*
+  Copyright © 2026 ColinKnapp.com. All rights reserved.
+
+  Render one JSON-LD page entity from an already parsed SST keyword map.
+*/}}
+{{- $page := .page -}}
+{{- $options := . -}}
+{{- if not $page }}{{ errorf "sst-jsonld: the page argument is required" }}{{ end -}}
+{{- $sst := .sst -}}
+{{- if not $sst }}{{ errorf "sst-jsonld: the sst argument is required" }}{{ end -}}
+{{- $strict := true -}}
+{{- if isset . "strict" }}{{ $strict = .strict }}{{ end -}}
+{{- $key := .key | default $page.RelPermalink -}}
+{{- $requestedLocale := .locale | default $page.Language.Lang -}}
+{{- $baseLocale := index (split (lower $requestedLocale) "-") 0 -}}
+{{- $entry := false -}}
+{{- $routeEntry := false -}}
+
+{{- $localized := index $sst "localized_keywords" -}}
+{{- with $localized -}}
+  {{- with index . "pages" -}}
+    {{- with index . $key }}{{ $routeEntry = . }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- with $routeEntry -}}
+  {{- range (slice $requestedLocale (lower $requestedLocale) $baseLocale) -}}
+    {{- if not $entry -}}
+      {{- $candidate := . -}}
+      {{- with index $routeEntry $candidate -}}
+        {{- $entry = . -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if and (not $entry) (eq $baseLocale "en") -}}
+  {{- with index $sst "pages" -}}
+    {{- with index . $key -}}
+      {{- $entry = index . "keywords" -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if and (not $entry) $strict -}}
+  {{- errorf "sst-jsonld: no %s keyword entry for key %s" $requestedLocale $key -}}
+{{- end -}}
+
+{{- with $entry -}}
+  {{- $keywords := slice -}}
+  {{- range (slice (index . "primary") (index . "secondary")) -}}
+    {{- range (. | default (slice)) -}}
+      {{- $keyword := strings.TrimSpace . -}}
+      {{- if and $keyword (not (in $keywords $keyword)) -}}
+        {{- $keywords = $keywords | append $keyword -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if not $keywords -}}
+    {{- if $strict }}{{ errorf "sst-jsonld: keyword entry for key %s is empty" $key }}{{ end -}}
+  {{- else -}}
+    {{- $canonical := $options.canonical | default $page.Permalink -}}
+    {{- $schemaType := $options.schemaType | default "WebPage" -}}
+    {{- $language := $options.language | default $requestedLocale -}}
+    {{- $payload := dict
+      "@context" "https://schema.org"
+      "@type" $schemaType
+      "@id" (printf "%s#webpage" $canonical)
+      "url" $canonical
+      "name" $page.Title
+      "inLanguage" $language
+      "keywords" $keywords
+    -}}
+    {{- with $page.Description }}{{ $payload = merge $payload (dict "description" .) }}{{ end -}}
+<script type="application/ld+json" data-sst-jsonld>{{ $payload | jsonify | safeJS }}</script>
+  {{- end -}}
+{{- end -}}

@@ -1,0 +1,5 @@
+# Copyright © 2026 ColinKnapp.com. All rights reserved.
+
+[module]
+  [module.hugoVersion]
+    min = "0.143.0"

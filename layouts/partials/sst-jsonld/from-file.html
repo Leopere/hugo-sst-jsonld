@@ -1,0 +1,21 @@
+{{/*
+  Copyright © 2026 ColinKnapp.com. All rights reserved.
+
+  Convenience adapter for a trusted SST YAML file inside the Hugo project.
+*/}}
+{{- $source := .source | default "sst.yml" -}}
+{{- $contents := os.ReadFile $source -}}
+{{- $resource := resources.FromString (printf "sst-jsonld/%s" (path.Base $source)) $contents -}}
+{{- $sst := transform.Unmarshal $resource -}}
+{{- $strict := true -}}
+{{- if isset . "strict" }}{{ $strict = .strict }}{{ end -}}
+{{- partial "sst-jsonld/keywords.html" (dict
+  "page" .page
+  "sst" $sst
+  "key" .key
+  "locale" .locale
+  "language" .language
+  "canonical" .canonical
+  "schemaType" .schemaType
+  "strict" $strict
+) -}}

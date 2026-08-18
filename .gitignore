@@ -1,0 +1,6 @@
+# Copyright © 2026 ColinKnapp.com. All rights reserved.
+
+/public/
+/resources/
+**/.hugo_build.lock
+/tests/fixture/public/
